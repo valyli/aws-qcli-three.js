@@ -1,10 +1,10 @@
-# Build three.js game with Amazon Q Developer CLI
+# 零代码生成 3D 游戏：基于 Amazon Q Developer CLI 和 Three.js 的实践
 
-**Amazon Q Developer** is a generative artificial intelligence (AI) powered conversational assistant that can help you understand, build, extend, and operate AWS applications. You can ask questions about AWS architecture, your AWS resources, best practices, documentation, support, and more. Amazon Q is constantly updating its capabilities so your questions get the most contextually relevant and actionable answers.
+**Amazon Q Developer** 是一个由生成式人工智能（AI）驱动的对话助手，可帮助你理解、构建、扩展和运维 AWS 应用程序。你可以向它询问关于 AWS 架构、你的 AWS 资源、最佳实践、官方文档、技术支持等问题。Amazon Q 不断更新其能力，确保为你的问题提供最具上下文相关性和可操作性的答案。
 
-**Amazon Q for command line** integrates contextual information, providing Amazon Q with an enhanced understanding of your use case, enabling it to provide relevant and context-aware responses. As you begin typing, Amazon Q populates contextually relevant subcommands, options, and arguments.
+**Amazon Q Developer CLI** 能整合上下文信息，使 Amazon Q 更深入理解你的使用场景，从而提供相关且具有上下文感知的响应。当你开始输入命令时，Amazon Q 会自动补全相关的子命令、选项和参数。
 
-**three.js** is a lightweight 3D game engine built on top of WebGL. It is a JavaScript 3D library that makes it easy to create and display animated 3D graphics in the browser using WebGL. It abstracts away the complexity of low-level graphics APIs, allowing developers to build immersive, interactive 3D experiences with simple, high-level code. Whether you're creating data visualizations, simulations, games, or product showcases, three.js helps you bring your ideas to life with performance, flexibility, and ease of use.
+**three.js** 是一个构建于 WebGL 之上的轻量级 3D 游戏引擎。它是一个 JavaScript 3D 库，使开发者可以轻松地在浏览器中使用 WebGL 创建和展示动画 3D 图形。three.js 屏蔽了底层图形 API 的复杂性，允许开发者用简洁、高层次的代码构建沉浸式、交互式的 3D 体验。无论你是在创建数据可视化、仿真系统、游戏，还是产品展示，three.js 都能以高性能、灵活性和易用性，帮助你将创意变为现实。
 
 
 # 客户场景
@@ -15,8 +15,8 @@
 使用 Amazon Q Developer CLI 的方式，引入 Amazon Q 强大的人工智能能力，结合 three.js 3D游戏引擎，生成mini游戏。再通过视频录制，生成视频广告素材。客户通过替换自己游戏的美术资源，实现批量生成视频素材，满足AB Test的数量需求。通过 Amazon Q Developer CLI 的对话方式，可以在不写代码的情况下改编演出剧本，使广告创意人员可以独立实现效果。three.js 可以利用桌面电脑的性能进行渲染，并可以控制渲染帧率实现类似离线渲染的能力，获得更好的画面效果。同时因为 three.js 是开源项目，Amazon Q 可以使用 three.js 的全部代码和文档，获得比其他商用闭源引擎更好的准确性。
 
 # 方案实施步骤
-1. Installing Amazon Q for command line.
-2. Clone git repo of three.js on local computer.
+1. 安装 Amazon Q for command line.
+2. 克隆 three.js git 仓库到本地电脑.
 3. 使用 Amazon Q Developer CLI 理解 three.js 工程的代码和文档。
 4. 使用 Amazon Q Developer CLI 编写一个游戏创建计划。
 5. 使用 Amazon Q Developer CLI 根据计划创建一个mini游戏工程。
@@ -66,10 +66,10 @@
 
 # 附录
 
-1. Installing Amazon Q for command line
+1. Amazon Q for command line 安装说明
 
 https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-installing.html
 
-2. three.js
+2. three.js github 地址
 
 https://github.com/mrdoob/three.js

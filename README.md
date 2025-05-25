@@ -1,4 +1,4 @@
-# Build three.js game with Amazon Q Developer CLI
+# Zero-Code 3D Game Generation with Amazon Q Developer CLI and Three.js
 
 **Amazon Q Developer** is a generative artificial intelligence (AI) powered conversational assistant that can help you understand, build, extend, and operate AWS applications. You can ask questions about AWS architecture, your AWS resources, best practices, documentation, support, and more. Amazon Q is constantly updating its capabilities so your questions get the most contextually relevant and actionable answers.
 
@@ -67,10 +67,10 @@ The following are key prompts used:
 
 # Appendix
 
-1. Installing Amazon Q for command line
+1. Document of Installing Amazon Q for command line
 
 https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-installing.html
 
-2. three.js
+2. Github repo of three.js
 
 https://github.com/mrdoob/three.js
