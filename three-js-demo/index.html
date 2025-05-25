@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js 赛车游戏</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- 引入 Three.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <!-- 引入 OrbitControls 用于开发调试 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- 引入 GLTFLoader 用于加载模型 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <div id="loading-screen">
+            <div class="loading-content">
+                <h1>赛车游戏加载中...</h1>
+                <div class="progress-bar">
+                    <div class="progress"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="start-screen">
+            <div class="start-content">
+                <h1>Three.js 赛车游戏</h1>
+                <button id="start-button">开始游戏</button>
+                <div class="instructions">
+                    <h2>操作说明:</h2>
+                    <p>↑ 或 W: 加速</p>
+                    <p>↓ 或 S: 刹车/倒车</p>
+                    <p>← 或 A: 左转</p>
+                    <p>→ 或 D: 右转</p>
+                    <p>空格: 手刹</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="game-ui">
+            <div id="speed">速度: <span id="speed-value">0</span> km/h</div>
+            <div id="time">时间: <span id="time-value">0</span></div>
+        </div>
+        
+        <div id="game-over-screen" class="hidden">
+            <div class="game-over-content">
+                <h1>游戏结束</h1>
+                <div id="final-time">完成时间: <span id="final-time-value">0</span></div>
+                <button id="restart-button">重新开始</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏脚本 -->
+    <script src="scripts/track.js"></script>
+    <script src="scripts/car.js"></script>
+    <script src="scripts/controls.js"></script>
+    <script src="scripts/physics.js"></script>
+    <script src="scripts/ui.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>
