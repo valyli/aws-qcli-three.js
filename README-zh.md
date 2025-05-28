@@ -104,7 +104,8 @@
     npm install three@0.159.0 serve@14.2.1
     ```
     这个安装命令在 three.js 官方文档无法找到。所以是 Amazon Q Developer CLI 根据模型已有的知识生成。
-   2. demo
+   
+    2. demo
    ```html
     <!-- 引入 Three.js 库 -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
