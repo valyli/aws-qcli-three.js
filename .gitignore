@@ -1,3 +1,4 @@
 render_server/node_modules/*
 render_server/out.mp4
 .DS_Store
+render_server/package-lock.json
