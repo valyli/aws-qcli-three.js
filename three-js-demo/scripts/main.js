@@ -50,6 +50,9 @@ function init() {
     
     // 添加窗口大小调整监听
     window.addEventListener('resize', onWindowResize, false);
+
+    // Add this function to capture render for the render server
+    captureRender();
     
     // 模拟加载完成
     setTimeout(() => {
@@ -131,6 +134,16 @@ function gameLoop() {
     
     // 渲染场景
     renderer.render(scene, camera);
+    
+    // 如果在渲染模式下且socket已连接，发送当前帧
+    if (socket && socket.connected && location.search.includes('?size=')) {
+        try {
+            const dataURL = renderer.domElement.toDataURL('image/png');
+            socket.emit('newFrame', { png: dataURL });
+        } catch (error) {
+            console.error('Error sending frame:', error);
+        }
+    }
 }
 
 // 开始游戏
@@ -190,4 +203,61 @@ window.onload = function() {
     document.getElementById('restart-button').addEventListener('click', restartGame);
     
     console.log("页面加载完成");
+};
+
+// 全局变量，用于存储socket连接
+let socket;
+
+// Capture render frames sending to the server
+function captureRender() {
+    // 检查URL中是否包含size参数（渲染服务器模式）
+    const sizeParam = location.search.split('?size=')[1];
+    
+    if (!sizeParam) {
+        console.log('No size parameter found in URL, not in render mode');
+        return;
+    }
+    
+    console.log('Render mode detected with size:', sizeParam);
+    
+    // 解析宽度和高度
+    const width = parseInt(sizeParam.split('x')[0]);
+    const height = parseInt(sizeParam.split('x')[1]);
+    
+    // 调整渲染器大小以匹配请求的尺寸
+    renderer.setSize(width, height);
+    
+    // 连接到Socket.io服务器
+    socket = io();
+    
+    // 向服务器发送问候
+    socket.emit('greetings', {});
+    
+    // 当服务器请求下一帧时
+    socket.on('nextFrame', function(ready) {
+        console.log('Server requested next frame');
+        
+        // 确保场景已经准备好
+        if (!scene || !camera || !renderer) {
+            console.error('Scene, camera or renderer not initialized');
+            return;
+        }
+        
+        // 渲染一帧
+        renderer.render(scene, camera);
+        
+        // 将渲染结果作为PNG发送到服务器
+        try {
+            const dataURL = renderer.domElement.toDataURL('image/png');
+            socket.emit('newFrame', { png: dataURL });
+            console.log('Frame sent to server');
+        } catch (error) {
+            console.error('Error capturing frame:', error);
+        }
+    });
+    
+    // 监听断开连接事件
+    socket.on('disconnect', function() {
+        console.log('Disconnected from render server');
+    });
 };
