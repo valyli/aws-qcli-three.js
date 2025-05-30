@@ -67,6 +67,125 @@
 # 生成的demo工程
 [project code](./three-js-demo/)
 
+# 视频渲染功能解析
+在本项目中，我们不仅实现了基于Three.js的3D游戏，还提供了一个强大的功能：将游戏画面渲染为视频文件。这个功能对于生成广告素材特别有用，让创意人员可以轻松录制游戏场景，用于营销推广。下面我们来详细解析这个功能的实现原理和使用方法。
+
+## 渲染服务器与客户端代码分析
+
+### 渲染服务器 (render_server)
+渲染服务器主要由以下几个部分组成：
+
+1. **server.js**：核心服务器代码
+   - 使用Express创建Web服务器，提供静态文件服务
+   - 使用Socket.IO建立与客户端的实时通信
+   - 接收客户端发送的每一帧画面，并写入FIFO管道
+   - 与FFmpeg协同工作，将帧序列转换为视频文件
+
+2. **render.sh**：渲染脚本
+   - 接收参数：视频尺寸、输出文件名、帧率
+   - 创建FIFO管道用于数据传输
+   - 启动Node.js服务器并将其输出通过管道传给FFmpeg
+   - FFmpeg负责将原始帧数据编码为视频文件
+
+### 客户端代码 (three-js-demo)
+客户端代码主要在`main.js`文件中实现了与渲染服务器的通信：
+
+1. **Socket.IO连接**：
+   - 检测URL参数中是否包含`size`参数，以确定是否处于渲染模式
+   - 建立与渲染服务器的Socket.IO连接
+
+2. **帧捕获逻辑**：
+   - 在游戏循环中捕获每一帧的渲染结果
+   - 将渲染结果转换为PNG格式的数据URL
+   - 通过Socket.IO发送给服务器
+
+## 实现原理
+
+整个视频渲染过程的工作流程如下：
+
+1. 用户执行`render.sh`脚本，指定视频参数
+2. 脚本创建FIFO管道，启动Node.js服务器
+3. 服务器启动Chrome浏览器，加载游戏页面
+4. 游戏页面检测到渲染模式，连接到Socket.IO服务器
+5. 服务器请求第一帧，客户端渲染并发送
+6. 服务器接收帧数据，转换后写入FIFO管道
+7. FFmpeg从管道读取数据，编码为视频文件
+8. 重复步骤5-7直到游戏结束或用户中断
+
+## 如何在Three.js项目中添加视频渲染功能
+
+要在自己的Three.js项目中添加类似的视频渲染功能，可以按照以下步骤操作：
+
+1. **准备渲染服务器**：
+   - 复制`render_server`目录到你的项目中
+   - 安装必要的依赖：`npm install express socket.io get-pixels`
+
+2. **修改客户端代码**：
+   - 在游戏的主JavaScript文件中添加以下代码：
+
+   ```javascript
+   // 全局变量，用于存储socket连接
+   let socket;
+
+   // 在初始化函数中添加
+   function init() {
+     // 原有的初始化代码...
+     
+     // 检查是否处于渲染模式
+     if (location.search.includes('?size=')) {
+       initRenderMode();
+     }
+   }
+
+   // 渲染模式初始化
+   function initRenderMode() {
+     // 解析尺寸参数
+     const sizeParam = location.search.split('?size=')[1];
+     const [width, height] = sizeParam.split('x').map(Number);
+     
+     // 调整渲染器尺寸
+     renderer.setSize(width, height);
+     
+     // 连接到Socket.IO服务器
+     socket = io();
+     
+     // 发送问候
+     socket.emit('greetings', {});
+     
+     // 监听服务器请求
+     socket.on('nextFrame', function(ready) {
+       // 渲染一帧并发送
+       renderer.render(scene, camera);
+       const dataURL = renderer.domElement.toDataURL('image/png');
+       socket.emit('newFrame', { png: dataURL });
+     });
+   }
+
+   // 在游戏循环中添加（可选，用于持续发送帧）
+   function gameLoop() {
+     // 原有的游戏循环代码...
+     
+     // 渲染场景
+     renderer.render(scene, camera);
+     
+     // 如果在渲染模式下，发送当前帧
+     if (socket && socket.connected) {
+       const dataURL = renderer.domElement.toDataURL('image/png');
+       socket.emit('newFrame', { png: dataURL });
+     }
+   }
+   ```
+
+3. **使用方法**：
+   - 确保FFmpeg已安装在系统中
+   - 执行渲染脚本：`./render.sh -s 640x480 -o output.mp4 -f 24`
+   - 参数说明：
+     - `-s`: 视频尺寸（宽x高）
+     - `-o`: 输出文件名
+     - `-f`: 帧率
+
+通过这种方式，你可以轻松地将任何Three.js项目转换为视频生成工具，为广告创意提供更多可能性。
+
 # 对照组测试
 在对照组测试中，我们向 Amazon Q Developer CLI 提出同样的要求，但不再提供 three.js 的代码和文档。观察它的生成过程。
 

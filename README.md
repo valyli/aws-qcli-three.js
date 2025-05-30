@@ -112,6 +112,128 @@ In the control group test, we asked Amazon Q Developer CLI the same request, but
 
 Therefore, by requiring Amazon Q Developer CLI to understand the specified documentation and code, it can generate content more accurately according to our intention. This approach allows us to input higher-quality information and details specific to our requirements into the model.
 
+# Video Rendering Function Analysis
+In this project, we not only implemented a 3D game based on Three.js, but also provided a powerful feature: rendering the game screen into a video file. This feature is particularly useful for generating advertising assets, allowing creative teams to easily record game scenes for marketing purposes. Below, we will analyze the implementation principles and usage of this feature in detail.
+
+## Rendering Server and Client Code Analysis
+
+### Rendering Server (render_server)
+The rendering server consists mainly of the following parts:
+
+1. **server.js**: Core server code  
+   - Uses Express to create a web server and serve static files  
+   - Uses Socket.IO to establish real-time communication with the client  
+   - Receives each frame sent by the client and writes it into a FIFO pipe  
+   - Works with FFmpeg to convert the frame sequence into a video file  
+
+2. **render.sh**: Rendering script  
+   - Accepts parameters: video resolution, output file name, frame rate  
+   - Creates a FIFO pipe for data transfer  
+   - Launches the Node.js server and pipes its output to FFmpeg  
+   - FFmpeg encodes the raw frame data into a video file  
+
+### Client Code (three-js-demo)
+The client code, mainly in the `main.js` file, implements communication with the rendering server:
+
+1. **Socket.IO Connection**  
+   - Checks whether the `size` parameter exists in the URL to determine if it’s in rendering mode  
+   - Establishes a Socket.IO connection to the rendering server  
+
+2. **Frame Capture Logic**  
+   - Captures each rendered frame within the game loop  
+   - Converts the rendering result to a PNG data URL  
+   - Sends it to the server via Socket.IO  
+
+## Implementation Principle
+
+The entire video rendering workflow proceeds as follows:
+
+1. The user executes the `render.sh` script and specifies video parameters  
+2. The script creates a FIFO pipe and launches the Node.js server  
+3. The server launches the Chrome browser to load the game page  
+4. The game page detects rendering mode and connects to the Socket.IO server  
+5. The server requests the first frame, the client renders and sends it  
+6. The server receives the frame data, converts it, and writes it into the FIFO pipe  
+7. FFmpeg reads the data from the pipe and encodes it into a video file  
+8. Steps 5–7 repeat until the game ends or the user interrupts  
+
+## How to Add Video Rendering to a Three.js Project
+
+To add similar video rendering functionality to your own Three.js project, follow these steps:
+
+1. **Prepare the Rendering Server**  
+   - Copy the `render_server` directory into your project  
+   - Install the necessary dependencies: `npm install express socket.io get-pixels`  
+
+2. **Modify the Client Code**  
+   - Add the following code to the main JavaScript file of your game:
+
+     ```javascript
+     // Global variable for socket connection
+     let socket;
+
+     // Add to initialization function
+     function init() {
+       // Existing initialization code...
+
+       // Check if in rendering mode
+       if (location.search.includes('?size=')) {
+         initRenderMode();
+       }
+     }
+
+     // Rendering mode initialization
+     function initRenderMode() {
+       // Parse size parameter
+       const sizeParam = location.search.split('?size=')[1];
+       const [width, height] = sizeParam.split('x').map(Number);
+
+       // Adjust renderer size
+       renderer.setSize(width, height);
+
+       // Connect to Socket.IO server
+       socket = io();
+
+       // Send greeting
+       socket.emit('greetings', {});
+
+       // Listen for server requests
+       socket.on('nextFrame', function(ready) {
+         // Render one frame and send
+         renderer.render(scene, camera);
+         const dataURL = renderer.domElement.toDataURL('image/png');
+         socket.emit('newFrame', { png: dataURL });
+       });
+     }
+
+     // Optional: Add to game loop for continuous frame sending
+     function gameLoop() {
+       // Existing game loop code...
+
+       // Render the scene
+       renderer.render(scene, camera);
+
+       // If in rendering mode, send current frame
+       if (socket && socket.connected) {
+         const dataURL = renderer.domElement.toDataURL('image/png');
+         socket.emit('newFrame', { png: dataURL });
+       }
+     }
+     ```
+
+3. **Usage**  
+   - Make sure FFmpeg is installed on your system  
+   - Run the rendering script:  
+     ```bash
+     ./render.sh -s 640x480 -o output.mp4 -f 24
+     ```
+   - Parameter explanation:  
+     - `-s`: Video resolution (width x height)  
+     - `-o`: Output file name  
+     - `-f`: Frame rate  
+
+By following this approach, you can easily turn any Three.js project into a video generation tool, offering more possibilities for creative advertising.
+
 # Appendix
 
 1. Document of Installing Amazon Q for command line
