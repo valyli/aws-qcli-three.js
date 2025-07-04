@@ -12,7 +12,7 @@
 又因为游戏行业的特性，这些广告素材的内容区别于其他行业的传统广告。它们通常使用的是自己游戏的美术设计，例如：角色的3D模型、卡通界面、技能特效等。因为和真实世界的场景差别很大，这使得目前主流的生成式模型无法帮助他们生成广告视频。并且在视频中，客户经常要求视频中的多个游戏角色，按照剧本进行互动，推进剧情发展。这也超出了目前主流的生成式模型的能力范围。
 
 # 解决方案
-使用 Amazon Q Developer CLI 的方式，引入 Amazon Q 强大的人工智能能力，结合 three.js 3D游戏引擎，生成mini游戏。再通过视频录制，生成视频广告素材。客户通过替换自己游戏的美术资源，实现批量生成视频素材，满足AB Test的数量需求。通过 Amazon Q Developer CLI 的对话方式，可以在不写代码的情况下改编演出剧本，使广告创意人员可以独立实现效果。three.js 可以利用桌面电脑的性能进行渲染，并可以控制渲染帧率实现类似离线渲染的能力，获得更好的画面效果。同时因为 three.js 是开源项目，Amazon Q 可以使用 three.js 的全部代码和文档，获得比其他商用闭源引擎更好的准确性。
+使用 Amazon Q Developer CLI 的方式，引入 Amazon Q 强大的人工智能能力，结合 three.js 3D游戏引擎，生成mini游戏。再通过视频录制，生成视频广告素材。客户通过替换自己游戏的美术资源，实现批量生成视频素材，满足AB Test的数量需求。通过 Amazon Q Developer CLI 的对话方式，可以在不写代码的情况下改编演出剧本，使广告创意人员可以独立实现效果。three.js 的渲染可运行于云端的 Headless 浏览器环境（如 Puppeteer + Headless Chrome），实现离线式、自动化的视频渲染流程，适合批量生成广告素材，支持多线程渲染和扩展性部署。同时因为 three.js 是开源项目，Amazon Q 可以理解和参考 three.js 的全部代码和文档，获得比其他商用闭源引擎更好的准确性。
 
 # 方案实施步骤
 1. 安装 Amazon Q for command line.
@@ -67,7 +67,7 @@
 # 生成的demo工程
 [project code](./three-js-demo/)
 
-# 视频渲染功能解析
+# 本地渲染原型设计（验证思路）
 在本项目中，我们不仅实现了基于Three.js的3D游戏，还提供了一个强大的功能：将游戏画面渲染为视频文件。这个功能对于生成广告素材特别有用，让创意人员可以轻松录制游戏场景，用于营销推广。下面我们来详细解析这个功能的实现原理和使用方法。
 
 ## 渲染服务器与客户端代码分析
@@ -185,6 +185,76 @@
      - `-f`: 帧率
 
 通过这种方式，你可以轻松地将任何Three.js项目转换为视频生成工具，为广告创意提供更多可能性。
+
+
+# 云端渲染部署方案
+
+为满足云上自动化生产需求，我们可将渲染流程部署在 AWS 云端主机上：
+
+- 使用 **EC2** 或 **Fargate 容器** 启动 Node.js + Puppeteer 服务  
+- 云端 **Headless Chrome** 加载 three.js 页面，自动运行指定剧本  
+- 使用 **FFmpeg** 录制帧序列为高质量视频  
+- 最终输出上传至 **Amazon S3**，供后续使用  
+
+该方案具备以下优势：
+
+- **可横向扩展**，适配 AB Test 批量素材生成  
+- **可追踪、复现渲染过程**（容器 ID + 剧本输入 + Git 哈希）  
+- 可与 **Step Functions / EventBridge** 编排流程，或结合 **Bedrock** 自动生成剧本与文案 
+
+## Node.js + Puppeteer + FFmpeg 示例代码
+
+```js
+// render.js - Node.js 脚本，用于云端自动渲染并录制
+
+const puppeteer = require('puppeteer');
+const { spawn } = require('child_process');
+const fs = require('fs');
+
+(async () => {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-gpu'],
+  });
+
+  const page = await browser.newPage();
+  const width = 1280, height = 720;
+  await page.setViewport({ width, height });
+
+  // 载入 three.js 游戏页面
+  await page.goto('https://your-s3-site-url/game.html?record=true');
+
+  // 启动 FFmpeg 进程，录制屏幕帧
+  const ffmpeg = spawn('ffmpeg', [
+    '-y',
+    '-f', 'image2pipe',
+    '-r', '24',
+    '-i', '-',             // 从 stdin 接收图像帧
+    '-c:v', 'libx264',
+    '-pix_fmt', 'yuv420p',
+    'output.mp4'
+  ]);
+
+  // 持续抓取页面帧并传入 FFmpeg
+  for (let i = 0; i < 240; i++) {  // 录制 10 秒（24fps）
+    const screenshot = await page.screenshot({ type: 'png' });
+    ffmpeg.stdin.write(screenshot);
+  }
+
+  ffmpeg.stdin.end();
+  await browser.close();
+})();
+```
+
+## 使用说明
+
+- 将 `render.js` 脚本部署在 **EC2** 或 **Fargate** 容器中运行  
+- 将 `game.html` 托管在 **Amazon S3** 并启用静态网站托管功能  
+- 渲染完成后生成的 `output.mp4` 可通过 AWS CLI 上传至 S3：
+
+```bash
+aws s3 cp output.mp4 s3://your-bucket/ads/output.mp4
+```
 
 # 对照组测试
 在对照组测试中，我们向 Amazon Q Developer CLI 提出同样的要求，但不再提供 three.js 的代码和文档。观察它的生成过程。
