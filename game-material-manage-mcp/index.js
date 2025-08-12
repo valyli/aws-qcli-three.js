@@ -7,6 +7,10 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+
+// 加载环境变量
+dotenv.config();
 
 class GameMaterialMCPServer {
   constructor() {
@@ -70,6 +74,26 @@ class GameMaterialMCPServer {
             },
             required: ['url']
           }
+        },
+        {
+          name: 'search',
+          description: '搜索游戏素材标签',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              keywords: {
+                type: 'string',
+                description: '搜索关键词'
+              },
+              search_mode: {
+                type: 'string',
+                description: '搜索模式',
+                enum: ['exact', 'fuzzy'],
+                default: 'exact'
+              }
+            },
+            required: ['keywords']
+          }
         }
       ]
     }));
@@ -84,6 +108,8 @@ class GameMaterialMCPServer {
             return await this.handleHttpGet(args);
           case 'http_post':
             return await this.handleHttpPost(args);
+          case 'search':
+            return await this.handleSearch(args);
           default:
             throw new Error(`未知工具: ${name}`);
         }
@@ -142,6 +168,31 @@ class GameMaterialMCPServer {
         {
           type: 'text',
           text: `HTTP POST 请求成功\nURL: ${url}\n状态码: ${response.status}\n响应: ${responseData}`
+        }
+      ]
+    };
+  }
+
+  async handleSearch(args) {
+    const { keywords, search_mode = 'exact' } = args;
+    
+    const encodedKeywords = encodeURIComponent(keywords);
+    const url = `https://wiuc62r37f.execute-api.us-east-1.amazonaws.com/prod/public/tag-searchs/keyword-search?search_mode=${search_mode}&keywords=${encodedKeywords}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-api-key': process.env.API_KEY
+      }
+    });
+
+    const data = await response.text();
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `搜索结果\n关键词: ${keywords}\n搜索模式: ${search_mode}\n状态码: ${response.status}\n结果: ${data}`
         }
       ]
     };

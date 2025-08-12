@@ -9,6 +9,20 @@ cd game-material-manage-mcp
 npm install
 ```
 
+## 配置环境变量
+
+1. 复制环境变量示例文件：
+```bash
+cp .env.example .env
+```
+
+2. 编辑 `.env` 文件，填入您的API密钥：
+```
+API_KEY=your_actual_api_key_here
+```
+
+**重要**: `.env` 文件已添加到 `.gitignore`，不会被提交到版本控制系统。
+
 ## 使用
 
 ### 启动服务器
