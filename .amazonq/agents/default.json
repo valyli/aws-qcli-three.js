@@ -1,0 +1,56 @@
+{
+  "name": "default-agent",
+  "version": "1.0.0",
+  "description": "Default agent configuration",
+  "mcpServers": {
+    "game-material-manage": {
+      "command": "node",
+      "args": [
+        "/Users/valyli/lj/pub-git/aws-qcli-three.js/game-material-manage-mcp/index.js"
+      ]
+    }
+  },
+  "tools": [
+    "@game-material-manage",
+    "fsRead",
+    "fsWrite",
+    "fsReplace",
+    "listDirectory",
+    "fileSearch",
+    "executeBash",
+    "codeReview",
+    "displayFindings"
+  ],
+  "allowedTools": [
+    "fsRead",
+    "listDirectory",
+    "fileSearch",
+    "codeReview",
+    "displayFindings",
+    "http_get",
+    "http_post"
+  ],
+  "toolsSettings": {
+    "execute_bash": {
+      "alwaysAllow": [
+        {
+          "preset": "readOnly"
+        }
+      ]
+    },
+    "use_aws": {
+      "alwaysAllow": [
+        {
+          "preset": "readOnly"
+        }
+      ]
+    }
+  },
+  "includedFiles": [
+    "AmazonQ.md",
+    "README.md",
+    ".amazonq/rules/**/*.md"
+  ],
+  "resources": [],
+  "promptHooks": []
+}

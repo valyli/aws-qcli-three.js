@@ -1,0 +1,14 @@
+{
+  "name": "game-material-manage-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for game material management with HTTP API access",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "node-fetch": "^3.3.2"
+  }
+}
