@@ -215,7 +215,12 @@ class GameMaterialMCPServer {
     const { keywords, search_mode = 'exact' } = args;
     
     const encodedKeywords = encodeURIComponent(keywords);
-    const url = `https://wiuc62r37f.execute-api.us-east-1.amazonaws.com/prod/public/tag-searchs/keyword-search?search_mode=${search_mode}&keywords=${encodedKeywords}`;
+    const baseUrl = process.env.API_BASE_URL;
+    
+    if (!baseUrl) {
+      throw new Error('API_BASE_URL 环境变量未设置');
+    }
+    const url = `${baseUrl}/public/tag-searchs/keyword-search?search_mode=${search_mode}&keywords=${encodedKeywords}`;
     
     const response = await fetch(url, {
       method: 'GET',
