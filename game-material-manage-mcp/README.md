@@ -48,7 +48,9 @@ npm start
   },
   "allowedTools": [
     "http_get",
-    "http_post"
+    "http_post",
+    "search",
+    "download_first_result"
   ]
 }
 ```
@@ -86,6 +88,21 @@ npm start
 - `data` (可选): 请求体数据对象
 - `headers` (可选): 请求头对象
 
+### search
+搜索游戏素材标签
+
+参数：
+- `keywords` (必需): 搜索关键词
+- `search_mode` (可选): 搜索模式，支持 'exact'（精确）或 'fuzzy'（模糊），默认为 'exact'
+
+### download_first_result
+搜索并下载第一个结果的图片文件到本地
+
+参数：
+- `keywords` (必需): 搜索关键词
+- `search_mode` (可选): 搜索模式，支持 'exact' 或 'fuzzy'，默认为 'exact'
+- `download_path` (可选): 下载文件保存路径，默认为当前目录
+
 ## 测试
 
 ### 1. 独立测试MCP服务器
@@ -110,6 +127,14 @@ node test-http.js
 使用http_post工具发送数据到 https://httpbin.org/post，数据为 {"test": "hello"}
 ```
 
+```
+使用search工具搜索关键词"手机"
+```
+
+```
+使用download_first_result工具搜索并下载关键词"手机"的第一个结果
+```
+
 ## 使用示例
 
 ### 在Amazon Q聊天中调用
@@ -122,6 +147,14 @@ node test-http.js
 - URL: https://httpbin.org/post
 - 数据: {"message": "hello world", "timestamp": "2024-01-01"}
 - Headers: {"Authorization": "Bearer token123"}
+```
+
+```
+搜索游戏素材，关键词是"武器"，使用模糊搜索模式
+```
+
+```
+下载手机相关的素材图片到Downloads文件夹
 ```
 
 ### JSON格式示例
@@ -149,6 +182,25 @@ node test-http.js
     "headers": {
       "Authorization": "Bearer your-token"
     }
+  }
+}
+
+// 搜索示例
+{
+  "name": "search",
+  "arguments": {
+    "keywords": "手机",
+    "search_mode": "exact"
+  }
+}
+
+// 下载示例
+{
+  "name": "download_first_result",
+  "arguments": {
+    "keywords": "手机",
+    "search_mode": "exact",
+    "download_path": "/Users/username/Downloads"
   }
 }
 ```
