@@ -84,6 +84,9 @@ function createTrackMarkings() {
     
     // 添加一些赛道装饰物（如轮胎墙）
     addTrackDecorations(trackInnerRadius, trackOuterRadius);
+    
+    // 添加广告牌
+    createBillboards(trackOuterRadius);
 }
 
 // 添加赛道装饰物
@@ -124,6 +127,62 @@ function addTrackDecorations(innerRadius, outerRadius) {
         stand.castShadow = true;
         stand.receiveShadow = true;
         scene.add(stand);
+    });
+}
+
+// 创建广告牌
+function createBillboards(trackOuterRadius) {
+    // 加载手机图片纹理
+    const textureLoader = new THREE.TextureLoader();
+    
+    // 查找手机图片文件
+    const phoneTexture = textureLoader.load('assets/textures/手机_1755064185683.png', 
+        function(texture) {
+            console.log('手机纹理加载成功');
+        },
+        function(progress) {
+            console.log('纹理加载进度:', progress);
+        },
+        function(error) {
+            console.error('纹理加载失败:', error);
+        }
+    );
+    
+    // 创建广告牌几何体（矩形平面）
+    const billboardGeometry = new THREE.PlaneGeometry(8, 6);
+    const billboardMaterial = new THREE.MeshStandardMaterial({ 
+        map: phoneTexture,
+        side: THREE.DoubleSide,
+        transparent: true
+    });
+    
+    // 在赛道周围创建多个广告牌
+    const billboardPositions = [
+        { x: 0, z: -(trackOuterRadius + 8), rotation: 0 },
+        { x: trackOuterRadius + 8, z: 0, rotation: -Math.PI / 2 },
+        { x: 0, z: trackOuterRadius + 8, rotation: Math.PI },
+        { x: -(trackOuterRadius + 8), z: 0, rotation: Math.PI / 2 }
+    ];
+    
+    billboardPositions.forEach((pos, index) => {
+        const billboard = new THREE.Mesh(billboardGeometry, billboardMaterial);
+        billboard.position.set(pos.x, 3, pos.z); // 高度设为3米
+        billboard.rotation.y = pos.rotation;
+        billboard.castShadow = true;
+        billboard.receiveShadow = true;
+        
+        // 添加广告牌支架
+        const poleGeometry = new THREE.CylinderGeometry(0.2, 0.2, 6, 8);
+        const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x666666 });
+        const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+        pole.position.set(pos.x, 3, pos.z);
+        pole.castShadow = true;
+        pole.receiveShadow = true;
+        
+        scene.add(billboard);
+        scene.add(pole);
+        
+        console.log(`创建广告牌 ${index + 1} 在位置:`, pos);
     });
 }
 
