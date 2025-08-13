@@ -14,6 +14,22 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
     <!-- 引入 GLTFLoader 用于加载模型 -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- 引入 FBXLoader 用于加载 FBX 模型 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://threejs.org/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FBXLoader.js';
+        // 将 FBXLoader 添加到全局 THREE 对象
+        window.THREE = window.THREE || {};
+        window.THREE.FBXLoader = FBXLoader;
+        console.log('FBXLoader 加载成功:', typeof FBXLoader);
+    </script>
 </head>
 <body>
     <div id="game-container">

@@ -20,12 +20,78 @@ let exhaustParticles;
 
 // 创建赛车
 function createCar() {
-    // 创建一个简单的赛车模型
+    console.log('开始创建赛车...');
+    
+    // 检查 FBX 加载器是否可用
+    if (typeof THREE.FBXLoader === 'undefined') {
+        console.error('FBXLoader 未加载，使用备用模型');
+        createFallbackCar();
+        return;
+    }
+    
+    // 使用 FBX 加载器加载绿色车辆模型
+    const fbxLoader = new THREE.FBXLoader();
+    const modelPath = 'assets/models/绿色车辆_1755096149592.fbx';
+    
+    console.log('尝试加载 FBX 模型:', modelPath);
+    
+    fbxLoader.load(
+        modelPath,
+        function(object) {
+            // 模型加载成功
+            console.log('模型加载成功，对象:', object);
+            car = object;
+            
+            // 设置模型属性
+            car.scale.set(0.4, 0.4, 0.4); // 设置合适的模型大小，避免被卡住
+            console.log('模型缩放设置为 0.4');
+            car.castShadow = true;
+            car.receiveShadow = true;
+            
+            // 为模型的所有子对象设置阴影
+            car.traverse(function(child) {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            
+            // 将模型添加到场景中
+            scene.add(car);
+            
+            // 添加尾气粒子效果
+            createExhaustEffect();
+            
+            // 设置赛车初始位置
+            resetCarPosition();
+            
+            console.log('绿色车辆模型加载完成');
+        },
+        function(progress) {
+            // 加载进度
+            if (progress.total > 0) {
+                const percent = (progress.loaded / progress.total * 100).toFixed(1);
+                console.log('模型加载进度:', percent + '%');
+            }
+        },
+        function(error) {
+            // 加载失败，使用备用的简单模型
+            console.error('模型加载失败，错误信息:', error);
+            console.log('使用备用模型');
+            createFallbackCar();
+        }
+    );
+}
+
+// 备用的简单赛车模型
+function createFallbackCar() {
+    // 创建一个简单的赛车模型（原有代码）
+    console.log('创建绿色备用赛车模型');
     const carBodyGeometry = new THREE.BoxGeometry(3, 1, 5);
     const carBodyMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0xff0000,
-        roughness: 0.5,
-        metalness: 0.7
+        color: 0x00aa00, // 明亮的绿色
+        roughness: 0.3,
+        metalness: 0.8
     });
     car = new THREE.Mesh(carBodyGeometry, carBodyMaterial);
     car.castShadow = true;
@@ -35,7 +101,7 @@ function createCar() {
     // 添加车顶
     const carTopGeometry = new THREE.BoxGeometry(2, 0.7, 2);
     const carTopMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0xff0000,
+        color: 0x00ff00,
         roughness: 0.5,
         metalness: 0.7
     });
@@ -67,7 +133,7 @@ function createCar() {
     resetCarPosition();
 }
 
-// 创建车轮
+// 创建车轮（仅在备用模型中使用）
 function createWheels() {
     const wheelGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 16);
     const wheelMaterial = new THREE.MeshStandardMaterial({ 
@@ -137,8 +203,11 @@ function updateExhaustEffect(deltaTime) {
     }
 }
 
-// 更新车轮旋转
+// 更新车轮旋转（仅在备用模型中使用）
 function updateWheelRotation(deltaTime) {
+    // 只有在使用备用模型时才更新车轮
+    if (wheels.length === 0) return;
+    
     // 根据车速旋转车轮
     const wheelRotationSpeed = carSpeed * 0.5;
     

@@ -14,7 +14,12 @@ let carLastPosition = new THREE.Vector3();
 // 初始化物理系统
 function initPhysics() {
     console.log("物理系统初始化");
-    carLastPosition.copy(car.position);
+    // 只有在car存在时才初始化位置
+    if (car && car.position) {
+        carLastPosition.copy(car.position);
+    } else {
+        carLastPosition.set(0, 0.5, -35); // 默认位置
+    }
 }
 
 // 更新物理

@@ -8,6 +8,7 @@ let gameTime = 0;
 
 // 初始化函数
 function init() {
+    console.log('开始初始化游戏...');
     // 创建场景
     scene = new THREE.Scene();
     
@@ -34,7 +35,9 @@ function init() {
     createTrack();
     
     // 创建赛车
+    console.log('即将调用 createCar() 函数...');
     createCar();
+    console.log('createCar() 函数调用完成');
     
     // 设置相机初始位置
     positionCameraForStart();
@@ -192,7 +195,18 @@ function restartGame() {
 }
 
 // 初始化
-window.onload = function() {
+function initializeGame() {
+    // 检查所有必要的函数是否存在
+    if (typeof createTrack === 'undefined' || 
+        typeof createCar === 'undefined' || 
+        typeof initControls === 'undefined' || 
+        typeof initPhysics === 'undefined' || 
+        typeof initUI === 'undefined') {
+        console.log('等待所有脚本加载完成...');
+        setTimeout(initializeGame, 100);
+        return;
+    }
+    
     init();
     gameLoop();
     
@@ -202,7 +216,12 @@ window.onload = function() {
     // 添加重新开始按钮事件监听
     document.getElementById('restart-button').addEventListener('click', restartGame);
     
-    console.log("页面加载完成");
+    console.log("游戏初始化完成");
+}
+
+window.onload = function() {
+    console.log("页面加载完成，开始初始化游戏...");
+    initializeGame();
 };
 
 // 全局变量，用于存储socket连接
