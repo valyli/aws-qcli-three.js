@@ -323,8 +323,20 @@ class GameMaterialMCPServer {
         throw new Error(`下载失败: ${fileResponse.status} ${fileResponse.statusText}`);
       }
       
+      // 从 URL 中提取文件扩展名
+      let fileExtension = '.png'; // 默认扩展名
+      
+      // 从 S3 URL 中提取文件扩展名
+      const urlParts = presignedUrl.split('/');
+      const fileName_from_url = urlParts[urlParts.length - 1].split('?')[0]; // 移除查询参数
+      const extensionMatch = fileName_from_url.match(/\.([^.]+)$/);
+      
+      if (extensionMatch) {
+        fileExtension = '.' + extensionMatch[1];
+      }
+      
       // 生成文件名
-      const fileName = `${keywords}_${Date.now()}.png`;
+      const fileName = `${keywords}_${Date.now()}${fileExtension}`;
       const filePath = path.join(download_path, fileName);
       
       // 保存文件
