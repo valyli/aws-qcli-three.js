@@ -28,7 +28,9 @@
     "codeReview",
     "displayFindings",
     "http_get",
-    "http_post"
+    "http_post",
+    "search",
+    "download_first_result"
   ],
   "toolsSettings": {
     "execute_bash": {

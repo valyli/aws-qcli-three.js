@@ -8,6 +8,8 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 // 加载环境变量
 import { fileURLToPath } from 'url';
@@ -104,6 +106,30 @@ class GameMaterialMCPServer {
             },
             required: ['keywords']
           }
+        },
+        {
+          name: 'download_first_result',
+          description: '搜索并下载第一个结果的图片文件到本地',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              keywords: {
+                type: 'string',
+                description: '搜索关键词'
+              },
+              search_mode: {
+                type: 'string',
+                description: '搜索模式',
+                enum: ['exact', 'fuzzy'],
+                default: 'exact'
+              },
+              download_path: {
+                type: 'string',
+                description: '下载文件保存路径（可选，默认为当前目录）'
+              }
+            },
+            required: ['keywords']
+          }
         }
       ]
     }));
@@ -120,6 +146,8 @@ class GameMaterialMCPServer {
             return await this.handleHttpPost(args);
           case 'search':
             return await this.handleSearch(args);
+          case 'download_first_result':
+            return await this.handleDownloadFirstResult(args);
           default:
             throw new Error(`未知工具: ${name}`);
         }
@@ -206,6 +234,122 @@ class GameMaterialMCPServer {
         }
       ]
     };
+  }
+
+  async handleDownloadFirstResult(args) {
+    const { keywords, search_mode = 'exact', download_path = '.' } = args;
+    
+    try {
+      // 调用search接口
+      const searchResult = await this.handleSearch({ keywords, search_mode });
+      const searchData = searchResult.content[0].text;
+      
+      // 提取JSON数据
+      const jsonMatch = searchData.match(/结果: (.+)$/);
+      if (!jsonMatch) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `下载失败\n关键词: ${keywords}\n错误: 无法解析搜索结果\n原始数据: ${searchData.substring(0, 500)}...`
+            }
+          ]
+        };
+      }
+      
+      const jsonData = JSON.parse(jsonMatch[1]);
+      
+      // 检查是否有结果
+      if (!jsonData.body || !jsonData.body.hits || !jsonData.body.hits.hits || jsonData.body.hits.hits.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `下载失败\n关键词: ${keywords}\n原因: 未找到匹配的结果`
+            }
+          ]
+        };
+      }
+      
+      // s3_presigned_url在最外层的jsonData中
+      let presignedUrl = null;
+      
+      // 从最外层获取s3_presigned_url
+      if (jsonData.body && jsonData.body.hits && jsonData.body.hits.hits && jsonData.body.hits.hits.length > 0) {
+        const firstResult = jsonData.body.hits.hits[0];
+        
+        // 先尝试从_source中获取
+        if (firstResult._source && firstResult._source.s3_presigned_url) {
+          presignedUrl = firstResult._source.s3_presigned_url;
+        }
+      }
+      
+      // 如果_source中没有，尝试从最外层获取
+      if (!presignedUrl && jsonData.body && jsonData.body.hits && jsonData.body.hits.hits && jsonData.body.hits.hits.length > 0) {
+        // 查看完整的数据结构，从搜索结果中可以看到s3_presigned_url在最外层
+        const fullData = jsonData.body.hits.hits[0];
+        if (fullData.s3_presigned_url) {
+          presignedUrl = fullData.s3_presigned_url;
+        }
+      }
+      
+      // 最后尝试从最外层的jsonData获取
+      if (!presignedUrl) {
+        // 从搜索结果可以看到，s3_presigned_url在最外层
+        if (jsonData.body && jsonData.body.hits && jsonData.body.hits.hits && jsonData.body.hits.hits.length > 0) {
+          // 直接从整个结果中查找
+          const resultStr = JSON.stringify(jsonData);
+          const urlMatch = resultStr.match(/"s3_presigned_url":"([^"]+)"/);
+          if (urlMatch) {
+            presignedUrl = urlMatch[1];
+          }
+        }
+      }
+      
+      if (!presignedUrl) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `下载失败\n关键词: ${keywords}\n错误: 未找到s3_presigned_url\n第一个结果结构: ${JSON.stringify(firstResult._source, null, 2).substring(0, 500)}...`
+            }
+          ]
+        };
+      }
+      
+      // 下载文件
+      const fileResponse = await fetch(presignedUrl);
+      if (!fileResponse.ok) {
+        throw new Error(`下载失败: ${fileResponse.status} ${fileResponse.statusText}`);
+      }
+      
+      // 生成文件名
+      const fileName = `${keywords}_${Date.now()}.png`;
+      const filePath = path.join(download_path, fileName);
+      
+      // 保存文件
+      const buffer = await fileResponse.buffer();
+      fs.writeFileSync(filePath, buffer);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `下载成功\n关键词: ${keywords}\n文件路径: ${filePath}\n文件大小: ${buffer.length} bytes\nS3 URL: ${presignedUrl}`
+          }
+        ]
+      };
+      
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `下载失败\n关键词: ${keywords}\n错误: ${error.message}`
+          }
+        ]
+      };
+    }
   }
 
   async run() {
