@@ -135,10 +135,10 @@ function createBillboards(trackOuterRadius) {
     // 加载手机图片纹理
     const textureLoader = new THREE.TextureLoader();
     
-    // 查找手机图片文件
-    const phoneTexture = textureLoader.load('assets/textures/手机_1755064185683.png', 
+    // 加载马的图片纹理
+    const horseTexture = textureLoader.load('assets/textures/马_1755153254044.webp', 
         function(texture) {
-            console.log('手机纹理加载成功');
+            console.log('马纹理加载成功');
         },
         function(progress) {
             console.log('纹理加载进度:', progress);
@@ -151,7 +151,7 @@ function createBillboards(trackOuterRadius) {
     // 创建广告牌几何体（矩形平面）
     const billboardGeometry = new THREE.PlaneGeometry(8, 6);
     const billboardMaterial = new THREE.MeshStandardMaterial({ 
-        map: phoneTexture,
+        map: horseTexture,
         side: THREE.DoubleSide,
         transparent: true
     });
