@@ -110,6 +110,25 @@ npm start
 - `search_mode` (可选): 搜索模式，支持 'exact' 或 'fuzzy'，默认为 'exact'
 - `download_path` (可选): 下载文件保存路径，默认为当前目录
 
+### image_search
+使用AI智能搜索技术搜索游戏素材
+
+参数：
+- `search_text` (必需): 自然语言搜索描述，如“一辆红色的赛车”或“现代风格的手机”
+- `embedding_model_type` (可选): 嵌入模型类型，默认为 'twelvelabs.marengo-embed-2-7-v1'
+- `media_type` (可选): 媒体类型，支持 'text' 或 'image'，默认为 'text'
+- `s3uri` (可选): S3 URI，默认为空
+
+### download_first_material
+使用AI智能搜索并下载第一个结果的游戏素材文件到本地
+
+参数：
+- `search_text` (必需): 自然语言搜索描述，如“一辆红色的赛车”或“现代风格的手机”
+- `embedding_model_type` (可选): 嵌入模型类型，默认为 'twelvelabs.marengo-embed-2-7-v1'
+- `media_type` (可选): 媒体类型，支持 'text' 或 'image'，默认为 'text'
+- `s3uri` (可选): S3 URI，默认为空
+- `download_path` (可选): 下载文件保存路径，默认为当前目录
+
 ## 测试
 
 ### 1. 独立测试MCP服务器
@@ -164,6 +183,10 @@ node test-http.js
 下载手机相关的素材图片到Downloads文件夹
 ```
 
+```
+使用AI智能搜索技术搜索“一辆红色的赛车”相关素材
+```
+
 ### JSON格式示例
 ```javascript
 // GET请求示例
@@ -207,6 +230,25 @@ node test-http.js
   "arguments": {
     "keywords": "手机",
     "search_mode": "exact",
+    "download_path": "/Users/username/Downloads"
+  }
+}
+
+// AI智能搜索示例
+{
+  "name": "image_search",
+  "arguments": {
+    "search_text": "一辆红色的赛车",
+    "embedding_model_type": "twelvelabs.marengo-embed-2-7-v1",
+    "media_type": "text"
+  }
+}
+
+// AI智能搜索下载示例
+{
+  "name": "download_first_material",
+  "arguments": {
+    "search_text": "一辆现代风格的赛车模型",
     "download_path": "/Users/username/Downloads"
   }
 }
